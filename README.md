@@ -1,17 +1,18 @@
 #### 1. 注解使用
 ```java
+@HRow
 public class Model {
 
     /**
      * rowkey.
      */
-    @Row
+    @HRowkey
     private String row;
     
     /**
      * 对应的列.
      */
-    @Column(family = "B", qualifier = "URL")
+    @HColumn(family = "B", qualifier = "URL")
     private String url;
     
 }
