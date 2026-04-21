@@ -7,16 +7,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * HBase 行注解，标记实体类与 HBase Row 的映射关系
- * 推荐使用 @HTable 注解替代
+ * HBase 表注解，指定实体类对应的 HBase 表名
  *
  * @author pengchuanjiang
- * @see HTable
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface HRow {
+public @interface HTable {
+
+    /**
+     * 表名
+     */
+    String value();
 
     /**
      * 默认列族
