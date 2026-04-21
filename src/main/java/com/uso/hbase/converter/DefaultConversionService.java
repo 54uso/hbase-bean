@@ -2,8 +2,14 @@ package com.uso.hbase.converter;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.util.Date;
 import org.apache.hadoop.hbase.util.Bytes;
 
+/**
+ * 默认类型转换服务，内置支持所有基本类型
+ *
+ * @author pengchuanjiang
+ */
 public class DefaultConversionService extends GenericConversionService {
 
     public DefaultConversionService() {
@@ -20,6 +26,17 @@ public class DefaultConversionService extends GenericConversionService {
         converterRegistry.addConverter(new ShortConvert());
         converterRegistry.addConverter(new BigDecimalConverter());
         converterRegistry.addConverter(new ByteBufferConvert());
+        converterRegistry.addConverter(new ByteArrayConverter());
+        converterRegistry.addConverter(new DateConverter());
+        converterRegistry.addConverter(new ByteConverter());
+        converterRegistry.addConverter(new CharacterConverter());
+    }
+
+    /**
+     * 添加枚举类型转换器
+     */
+    public static <E extends Enum<E>> void addEnumConverter(ConverterRegistry converterRegistry, Class<E> enumType) {
+        converterRegistry.addConverter(new EnumConvert<>(enumType));
     }
 
     private static final class IntegerConvert implements Converter<Integer> {
@@ -144,6 +161,86 @@ public class DefaultConversionService extends GenericConversionService {
         @Override
         public ByteBuffer from(final byte[] bytes) {
             return ByteBuffer.wrap(bytes);
+        }
+
+    }
+
+    private static final class ByteArrayConverter implements Converter<byte[]> {
+
+        @Override
+        public byte[] convert(final byte[] source) {
+            return source;
+        }
+
+        @Override
+        public byte[] from(final byte[] bytes) {
+            return bytes;
+        }
+
+    }
+
+    private static final class DateConverter implements Converter<Date> {
+
+        @Override
+        public byte[] convert(final Date source) {
+            return Bytes.toBytes(source.getTime());
+        }
+
+        @Override
+        public Date from(final byte[] bytes) {
+            return new Date(Bytes.toLong(bytes));
+        }
+
+    }
+
+    private static final class ByteConverter implements Converter<Byte> {
+
+        @Override
+        public byte[] convert(final Byte source) {
+            return new byte[]{source};
+        }
+
+        @Override
+        public Byte from(final byte[] bytes) {
+            return bytes[0];
+        }
+
+    }
+
+    private static final class CharacterConverter implements Converter<Character> {
+
+        @Override
+        public byte[] convert(final Character source) {
+            return new byte[]{(byte) source.charValue()};
+        }
+
+        @Override
+        public Character from(final byte[] bytes) {
+            return (char) bytes[0];
+        }
+
+    }
+
+    /**
+     * 泛型枚举转换器
+     */
+    private static final class EnumConvert<E extends Enum<E>> implements Converter<E> {
+
+        private final Class<E> enumType;
+
+        EnumConvert(Class<E> enumType) {
+            this.enumType = enumType;
+        }
+
+        @Override
+        public byte[] convert(final E source) {
+            return Bytes.toBytes(source.name());
+        }
+
+        @Override
+        public E from(final byte[] bytes) {
+            String name = Bytes.toString(bytes);
+            return Enum.valueOf(enumType, name);
         }
 
     }
